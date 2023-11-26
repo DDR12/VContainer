@@ -42,7 +42,7 @@ namespace VContainer.Unity
         {
             var component = default(Component);
             var gameObjectBuffer = UnityEngineObjectListBuffer<GameObject>.Get();
-            scene.GetRootGameObjects(gameObjectBuffer);
+            customScene.GetRootGameObjects(gameObjectBuffer);
             foreach (var gameObject in gameObjectBuffer)
             {
                 component = gameObject.GetComponentInChildren(componentType, true);
