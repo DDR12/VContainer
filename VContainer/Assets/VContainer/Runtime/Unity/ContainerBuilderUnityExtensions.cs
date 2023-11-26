@@ -150,6 +150,28 @@ namespace VContainer.Unity
             return builder.RegisterComponentInHierarchy(typeof(T));
         }
 
+        public static ComponentRegistrationBuilder RegisterComponentInScenes(this IContainerBuilder builder, Type type)
+        {
+            var registrationBuilder = new ComponentRegistrationBuilder(multiScene: true, type);
+            // Force inject execution
+            builder.RegisterBuildCallback(
+                container =>
+                {
+                    container.Resolve(
+                        registrationBuilder.InterfaceTypes != null
+                            ? registrationBuilder.InterfaceTypes[0]
+                            : registrationBuilder.ImplementationType
+                    );
+                }
+            );
+            return builder.Register(registrationBuilder);
+        }
+        
+        public static ComponentRegistrationBuilder RegisterComponentInScenes<T>(this IContainerBuilder builder)
+        {
+            return builder.RegisterComponentInScenes(typeof(T));
+        }
+
         public static ComponentRegistrationBuilder RegisterComponentOnNewGameObject(
             this IContainerBuilder builder,
             Type type,

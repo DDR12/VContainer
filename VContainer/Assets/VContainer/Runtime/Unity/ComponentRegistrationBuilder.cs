@@ -37,6 +37,7 @@ namespace VContainer.Unity
 
         ComponentDestination destination;
         Scene scene;
+        private bool multiScene;
 
         internal ComponentRegistrationBuilder(object instance)
             : base(instance.GetType(), Lifetime.Singleton)
@@ -48,6 +49,12 @@ namespace VContainer.Unity
             : base(implementationType, Lifetime.Scoped)
         {
             this.scene = scene;
+        }
+
+        internal ComponentRegistrationBuilder(bool multiScene, Type implementationType)
+            : base(implementationType, Lifetime.Scoped)
+        {
+            this.multiScene = multiScene;
         }
 
         internal ComponentRegistrationBuilder(
@@ -77,6 +84,10 @@ namespace VContainer.Unity
                 var injector = InjectorCache.GetOrBuild(ImplementationType);
                 provider = new ExistingComponentProvider(instance, injector, Parameters, destination.DontDestroyOnLoad);
             }
+            else if (multiScene)
+            {
+                provider = new FindComponentProvider(ImplementationType, Parameters, multiScene, in destination);
+            }
             else if (scene.IsValid())
             {
                 provider = new FindComponentProvider(ImplementationType, Parameters, in scene, in destination);
@@ -89,8 +100,10 @@ namespace VContainer.Unity
             else
             {
                 var injector = InjectorCache.GetOrBuild(ImplementationType);
-                provider = new NewGameObjectProvider(ImplementationType, injector, Parameters, in destination, gameObjectName);
+                provider = new NewGameObjectProvider(ImplementationType, injector, Parameters, in destination,
+                    gameObjectName);
             }
+
             return new Registration(ImplementationType, Lifetime, InterfaceTypes, provider);
         }
 
@@ -111,5 +124,5 @@ namespace VContainer.Unity
             destination.DontDestroyOnLoad = true;
             return this;
         }
-   }
+    }
 }
