@@ -150,9 +150,11 @@ namespace VContainer.Unity
             return builder.RegisterComponentInHierarchy(typeof(T));
         }
 
-        public static ComponentRegistrationBuilder RegisterComponentInScenes(this IContainerBuilder builder, Type type)
+        public static ComponentRegistrationBuilder RegisterComponentInScenes(this IContainerBuilder builder, Type type,
+            bool includeInactive)
         {
-            var registrationBuilder = new ComponentRegistrationBuilder(multiScene: true, type);
+            var registrationBuilder =
+                new ComponentRegistrationBuilder(multiScene: true, multiSceneIncludeInactive: includeInactive, type);
             // Force inject execution
             builder.RegisterBuildCallback(
                 container =>
@@ -166,10 +168,11 @@ namespace VContainer.Unity
             );
             return builder.Register(registrationBuilder);
         }
-        
-        public static ComponentRegistrationBuilder RegisterComponentInScenes<T>(this IContainerBuilder builder)
+
+        public static ComponentRegistrationBuilder RegisterComponentInScenes<T>(this IContainerBuilder builder,
+            bool includeInactive)
         {
-            return builder.RegisterComponentInScenes(typeof(T));
+            return builder.RegisterComponentInScenes(typeof(T), includeInactive);
         }
 
         public static ComponentRegistrationBuilder RegisterComponentOnNewGameObject(

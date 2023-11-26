@@ -38,6 +38,7 @@ namespace VContainer.Unity
         ComponentDestination destination;
         Scene scene;
         private bool multiScene;
+        private bool multiSceneIncludeInactive;
 
         internal ComponentRegistrationBuilder(object instance)
             : base(instance.GetType(), Lifetime.Singleton)
@@ -51,10 +52,11 @@ namespace VContainer.Unity
             this.scene = scene;
         }
 
-        internal ComponentRegistrationBuilder(bool multiScene, Type implementationType)
+        internal ComponentRegistrationBuilder(bool multiScene, bool multiSceneIncludeInactive, Type implementationType)
             : base(implementationType, Lifetime.Scoped)
         {
             this.multiScene = multiScene;
+            this.multiSceneIncludeInactive = multiSceneIncludeInactive;
         }
 
         internal ComponentRegistrationBuilder(
@@ -86,7 +88,7 @@ namespace VContainer.Unity
             }
             else if (multiScene)
             {
-                provider = new FindComponentProvider(ImplementationType, Parameters, multiScene, in destination);
+                provider = new MultiSceneComponentProvider(ImplementationType, Parameters, multiSceneIncludeInactive);
             }
             else if (scene.IsValid())
             {
