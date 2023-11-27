@@ -146,6 +146,11 @@ namespace VContainer.Unity
             DisposeCore();
         }
 
+        protected virtual void OnPostBuild()
+        {
+            
+        }
+
         protected virtual void Configure(IContainerBuilder builder) { }
 
         public void Dispose()
@@ -198,6 +203,7 @@ namespace VContainer.Unity
 
             AutoInjectAll();
             AwakeWaitingChildren(this);
+            OnPostBuild();
         }
 
         public TScope CreateChild<TScope>(IInstaller installer = null)
