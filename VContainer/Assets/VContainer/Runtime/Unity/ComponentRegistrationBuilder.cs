@@ -52,8 +52,9 @@ namespace VContainer.Unity
             this.scene = scene;
         }
 
-        internal ComponentRegistrationBuilder(bool multiScene, bool multiSceneIncludeInactive, Type implementationType)
-            : base(implementationType, Lifetime.Scoped)
+        internal ComponentRegistrationBuilder(bool multiScene, bool multiSceneIncludeInactive, Type implementationType,
+            Lifetime lifetime = Lifetime.Scoped)
+            : base(implementationType, lifetime)
         {
             this.multiScene = multiScene;
             this.multiSceneIncludeInactive = multiSceneIncludeInactive;

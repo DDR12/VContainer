@@ -151,10 +151,11 @@ namespace VContainer.Unity
         }
 
         public static ComponentRegistrationBuilder RegisterComponentInScenes(this IContainerBuilder builder, Type type,
-            bool includeInactive)
+            Lifetime lifetime = Lifetime.Scoped,
+            bool includeInactive = false)
         {
             var registrationBuilder =
-                new ComponentRegistrationBuilder(multiScene: true, multiSceneIncludeInactive: includeInactive, type);
+                new ComponentRegistrationBuilder(multiScene: true, multiSceneIncludeInactive: includeInactive, type, lifetime);
             // Force inject execution
             builder.RegisterBuildCallback(
                 container =>
@@ -170,9 +171,9 @@ namespace VContainer.Unity
         }
 
         public static ComponentRegistrationBuilder RegisterComponentInScenes<T>(this IContainerBuilder builder,
-            bool includeInactive)
+            Lifetime lifetime = Lifetime.Scoped, bool includeInactive = false)
         {
-            return builder.RegisterComponentInScenes(typeof(T), includeInactive);
+            return builder.RegisterComponentInScenes(typeof(T), lifetime, includeInactive);
         }
 
         public static ComponentRegistrationBuilder RegisterComponentOnNewGameObject(
