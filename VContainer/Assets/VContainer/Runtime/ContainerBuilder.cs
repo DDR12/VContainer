@@ -18,7 +18,7 @@ namespace VContainer
 
         T Register<T>(T registrationBuilder) where T : RegistrationBuilder;
         void RegisterBuildCallback(Action<IObjectResolver> container);
-        bool Exists(Type type, bool includeInterfaceTypes = false);
+        bool Exists(Type type, bool includeInterfaceTypes = false, bool findParentScopes = false);
     }
 
     public sealed class ScopedContainerBuilder : ContainerBuilder
@@ -44,6 +44,31 @@ namespace VContainer
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override IObjectResolver Build() => BuildScope();
+
+        public override bool Exists(Type type, bool includeInterfaceTypes = false, bool findParentScopes = false)
+        {
+            if (base.Exists(type, includeInterfaceTypes, findParentScopes))
+            {
+                return true;
+            }
+
+            if (findParentScopes)
+            {
+                var next = parent;
+                while (next != null)
+                {
+                    if (next.TryGetRegistration(type, out var registration))
+                    {
+                        if (includeInterfaceTypes || registration.ImplementationType == type)
+                        {
+                            return true;
+                        }
+                    }
+                    next = next.Parent;
+                }
+            }
+            return false;
+        }
     }
 
     public class ContainerBuilder : IContainerBuilder
@@ -69,7 +94,7 @@ namespace VContainer
         }
 
         readonly List<RegistrationBuilder> registrationBuilders = new List<RegistrationBuilder>();
-        List<Action<IObjectResolver>> buildCallbacks;
+        Action<IObjectResolver> buildCallback;
         DiagnosticsCollector diagnostics;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -83,13 +108,11 @@ namespace VContainer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RegisterBuildCallback(Action<IObjectResolver> callback)
         {
-            if (buildCallbacks == null)
-                buildCallbacks = new List<Action<IObjectResolver>>();
-            buildCallbacks.Add(callback);
+            buildCallback += callback;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Exists(Type type, bool includeInterfaceTypes = false)
+        public virtual bool Exists(Type type, bool includeInterfaceTypes = false, bool findParentScopes = false)
         {
             foreach (var registrationBuilder in registrationBuilders)
             {
@@ -149,13 +172,7 @@ namespace VContainer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void EmitCallbacks(IObjectResolver container)
         {
-            if (buildCallbacks == null) return;
-
-            foreach (var callback in buildCallbacks)
-            {
-                callback.Invoke(container);
-            }
-
+            buildCallback?.Invoke(container);
             Diagnostics?.NotifyContainerBuilt(container);
         }
     }

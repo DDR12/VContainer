@@ -6,11 +6,11 @@ namespace VContainer
 {
     public class RegistrationBuilder
     {
-        internal readonly Type ImplementationType;
-        internal readonly Lifetime Lifetime;
+        protected internal readonly Type ImplementationType;
+        protected internal readonly Lifetime Lifetime;
 
-        internal List<Type> InterfaceTypes;
-        internal List<IInjectParameter> Parameters;
+        protected internal List<Type> InterfaceTypes;
+        protected internal List<IInjectParameter> Parameters;
 
         public RegistrationBuilder(Type implementationType, Lifetime lifetime)
         {
@@ -47,7 +47,7 @@ namespace VContainer
             return this;
         }
 
-        public RegistrationBuilder AsImplementedInterfaces()
+        public virtual RegistrationBuilder AsImplementedInterfaces()
         {
             InterfaceTypes = InterfaceTypes ?? new List<Type>();
             InterfaceTypes.AddRange(ImplementationType.GetInterfaces());
@@ -90,6 +90,13 @@ namespace VContainer
             Parameters.Add(new NamedParameter(name, value));
             return this;
         }
+        
+        public RegistrationBuilder WithParameter(string name, Func<IObjectResolver, object> value)
+        {
+            Parameters = Parameters ?? new List<IInjectParameter>();
+            Parameters.Add(new FuncNamedParameter(name, value));
+            return this;
+        }
 
         public RegistrationBuilder WithParameter(Type type, object value)
         {
@@ -97,13 +104,30 @@ namespace VContainer
             Parameters.Add(new TypedParameter(type, value));
             return this;
         }
+        
+        public RegistrationBuilder WithParameter(Type type, Func<IObjectResolver, object> value)
+        {
+            Parameters = Parameters ?? new List<IInjectParameter>();
+            Parameters.Add(new FuncTypedParameter(type, value));
+            return this;
+        }
 
         public RegistrationBuilder WithParameter<TParam>(TParam value)
         {
             return WithParameter(typeof(TParam), value);
         }
+        
+        public RegistrationBuilder WithParameter<TParam>(Func<IObjectResolver, TParam> value)
+        {
+            return WithParameter(typeof(TParam), resolver => value(resolver));
+        }
+        
+        public RegistrationBuilder WithParameter<TParam>(Func<TParam> value)
+        {
+            return WithParameter(typeof(TParam), _ => value());
+        }
 
-        void AddInterfaceType(Type interfaceType)
+        protected virtual void AddInterfaceType(Type interfaceType)
         {
             if (!interfaceType.IsAssignableFrom(ImplementationType))
             {
